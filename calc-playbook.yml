@@ -1,0 +1,63 @@
+- name: Deploy Scientific Calculator Container
+  hosts: all
+  become: yes # Required for managing Docker
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    # ansible_become_pass: "{{ lookup('env', 'ANSIBLE_BECOME_PASS') }}"
+
+
+  tasks:
+    # - name: Allow Ansible to run sudo without a password
+    #   copy:
+    #     dest: /etc/sudoers.d/ansible
+    #     content: "ansible ALL=(ALL) NOPASSWD: ALL"
+    #   become: yes
+
+    - name: Ensure Docker is installed
+      command: docker --version
+      register: docker_installed
+      ignore_errors: yes
+
+    - name: Install Docker if not installed
+      when: docker_installed.rc != 0
+      block:
+        - name: Install Homebrew (if needed)
+          command: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          args:
+            creates: /opt/homebrew/bin/brew
+
+        - name: Install Docker using Homebrew
+          command: brew install --cask docker
+
+    - name: Start Docker (if not running)
+      shell: sudo systemctl start docker
+      ignore_errors: yes # Ignore error if Docker is already running
+
+    - name: Wait for Docker to be available
+      command: docker info
+      register: docker_status
+      until: docker_status.rc == 0
+      retries: 10
+      delay: 5
+
+    - name: Install required Ansible collections
+      ansible.builtin.command: ansible-galaxy collection install community.docker
+
+    - name: Pull the latest Docker image
+      community.docker.docker_image:
+        name: "deepanshu0903/scientific-calculator"
+        source: pull
+
+    - name: Remove existing container (if running)
+      community.docker.docker_container:
+        name: calculator-container
+        state: absent
+
+    - name: Run the container
+      community.docker.docker_container:
+        name: calculator-container
+        image: "deepanshu0903/scientific-calculator:latest"
+        state: started
+        restart_policy: always
+        ports:
+          - "8000:8000" # Corrected port mapping for FastAPI
