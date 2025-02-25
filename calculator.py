@@ -1,60 +1,52 @@
-#!/usr/bin/env python3
+# calculator.py
+
 import math
 
-def square_root(x):
-    try:
-        return math.sqrt(x)
-    except ValueError:
-        return "Invalid input for square root."
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
-def factorial(x):
-    try:
-        return math.factorial(int(x))
-    except (ValueError, OverflowError):
-        return "Invalid input for factorial."
+app = FastAPI()
 
-def natural_log(x):
-    try:
-        return math.log(x)
-    except ValueError:
-        return "Invalid input for natural logarithm."
+# Allow CORS for frontend interaction
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-def power(x, b):
-    try:
-        return math.pow(x, b)
-    except Exception as e:
-        return f"Error computing power: {e}"
+# app.mount("/static", StaticFiles(directory="static"), name="static")
 
-def menu():
-    print("Scientific Calculator")
-    print("1. Square Root (√x)")
-    print("2. Factorial (!x)")
-    print("3. Natural Logarithm (ln(x))")
-    print("4. Power Function (x^b)")
-    print("5. Exit")
 
-def main():
-    while True:
-        menu()
-        choice = input("Enter your choice: ")
-        if choice == '1':
-            x = float(input("Enter a number: "))
-            print("Result:", square_root(x))
-        elif choice == '2':
-            x = int(input("Enter an integer: "))
-            print("Result:", factorial(x))
-        elif choice == '3':
-            x = float(input("Enter a number: "))
-            print("Result:", natural_log(x))
-        elif choice == '4':
-            x = float(input("Enter base value: "))
-            b = float(input("Enter exponent: "))
-            print("Result:", power(x, b))
-        elif choice == '5':
-            print("Exiting...")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+@app.get("/")
+def home():
+    return FileResponse("static/index.html")
 
-if __name__ == '__main__':
-    main()
+
+@app.get("/sqrt/{x}")
+def square_root(x: float):
+    return {"result": math.sqrt(x)}
+
+
+@app.get("/factorial/{x}")
+def factorial(x: int):
+    return {"result": math.factorial(x)}
+
+
+@app.get("/ln/{x}")
+def natural_log(x: float):
+    return {"result": math.log(x)}
+
+
+@app.get("/power/{x}/{b}")
+def power(x: float, b: float):
+    return {"result": math.pow(x, b)}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="127.0.0.1", port=8000)
