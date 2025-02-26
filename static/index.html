@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scientific Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .calculator {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 300px;
+      }
+
+      h1 {
+        font-size: 22px;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      input {
+        width: 90%;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        text-align: center;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      button {
+        padding: 10px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background: #007bff;
+        color: white;
+        transition: 0.3s;
+        width: 120px;
+      }
+
+      button:hover {
+        background: #0056b3;
+      }
+
+      #result {
+        font-size: 18px;
+        margin-top: 15px;
+        font-weight: bold;
+        color: #222;
+      }
+    </style>
+    <script>
+      async function calculate(operation) {
+        let x = document.getElementById("x").value;
+        let b = document.getElementById("b").value;
+        let url = `http://localhost:8000/${operation}/${x}`;
+
+        if (operation === "power") {
+          url += `/${b}`;
+        }
+
+        try {
+          let response = await fetch(url);
+          let data = await response.json();
+          document.getElementById("result").innerText =
+            `Result: ${data.result}`;
+        } catch (error) {
+          document.getElementById("result").innerText =
+            "Error: Unable to fetch result";
+        }
+      }
+
+      function togglePowerInput() {
+        const powerInput = document.getElementById("b");
+        powerInput.classList.toggle("hidden");
+        powerInput.value = ""; // Reset value when hidden
+      }
+    </script>
+  </head>
+  <body>
+    <div class="calculator">
+      <h1>Scientific Calculator</h1>
+      <input type="number" id="x" placeholder="Enter value x" />
+      <input type="number" id="b" placeholder="Enter value b (for power)" />
+
+      <div class="btn-group">
+        <button onclick="calculate('sqrt')">Square Root</button>
+        <button onclick="calculate('factorial')">Factorial</button>
+        <button onclick="calculate('ln')">Natural Log</button>
+        <button onclick="calculate('power');">Power</button>
+      </div>
+
+      <p id="result"></p>
+    </div>
+  </body>
+</html>

@@ -18,16 +18,6 @@
       register: docker_installed
       ignore_errors: yes
 
-    - name: Install Docker if not installed
-      when: docker_installed.rc != 0
-      block:
-        - name: Install Homebrew (if needed)
-          command: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          args:
-            creates: /opt/homebrew/bin/brew
-
-        - name: Install Docker using Homebrew
-          command: brew install --cask docker
 
     - name: Start Docker (if not running)
       shell: sudo systemctl start docker
