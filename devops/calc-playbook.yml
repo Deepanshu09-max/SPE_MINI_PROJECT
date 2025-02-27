@@ -13,12 +13,12 @@
         dest: /opt/docker-compose.yml
 
     - name: Pull images via Docker Compose
-      shell: docker-compose pull
+      shell: docker compose pull
       args:
         chdir: /opt
 
     - name: Run Docker Compose
-      shell: docker-compose up -d
+      shell: docker compose up -d
       args:
         chdir: /opt
 
