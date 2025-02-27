@@ -1,0 +1,25 @@
+version: '3'
+
+networks:
+  spe-mp:
+    external: true   
+
+services:
+  backend:
+    container_name: calc-backend
+    image: deepanshu0903/calc-backend:latest
+    ports:
+      - "8000:8000"
+    networks:
+      - spe-mp
+
+  frontend:
+    container_name: calc-frontend
+    image: deepanshu0903/calc-frontend:latest
+    depends_on:
+    	-calc-backend
+    ports:
+      - "3000:80"
+    networks:
+      - spe-mp
+
