@@ -1,72 +1,98 @@
-- name: Deploy Scientific Calculator Containers
+- name: Deploy with Docker Compose
   hosts: all
-  become: yes  # Required for managing Docker
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
+  become: yes
 
   tasks:
-    - name: Ensure Docker is installed
-      command: docker --version
-      register: docker_installed
+    - name: Ensure Docker is running
+      shell: systemctl start docker
       ignore_errors: yes
 
-    - name: Start Docker (if not running)
-      shell: sudo systemctl start docker
-      ignore_errors: yes  # Ignore error if Docker is already running
+    - name: Copy docker-compose file
+      copy:
+        src: docker-compose.yml
+        dest: /opt/docker-compose.yml
 
-    - name: Wait for Docker to be available
-      command: docker info
-      register: docker_status
-      until: docker_status.rc == 0
-      retries: 10
-      delay: 5
+    - name: Pull images via Docker Compose
+      shell: docker-compose pull
+      args:
+        chdir: /opt
 
-    - name: Install required Ansible collections
-      ansible.builtin.command: ansible-galaxy collection install community.docker
+    - name: Run Docker Compose
+      shell: docker-compose up -d
+      args:
+        chdir: /opt
 
-    ########################################################
-    # Backend Container
-    ########################################################
 
-    - name: Pull the latest backend image
-      community.docker.docker_image:
-        name: "deepanshu0903/calc-backend:latest"
-        source: pull
 
-    - name: Remove existing backend container (if running)
-      community.docker.docker_container:
-        name: calc-backend
-        state: absent
+# - name: Deploy Scientific Calculator Containers
+#   hosts: all
+#   become: yes  # Required for managing Docker
+#   vars:
+#     ansible_python_interpreter: /usr/bin/python3
 
-    - name: Run the backend container
-      community.docker.docker_container:
-        name: calc-backend
-        image: "deepanshu0903/calc-backend:latest"
-        state: started
-        restart_policy: always
-        ports:
-          - "8000:8000"  # Host:Container port mapping for backend
+#   tasks:
+#     - name: Ensure Docker is installed
+#       command: docker --version
+#       register: docker_installed
+#       ignore_errors: yes
 
-    ########################################################
-    # Frontend Container
-    ########################################################
+#     - name: Start Docker (if not running)
+#       shell: sudo systemctl start docker
+#       ignore_errors: yes  # Ignore error if Docker is already running
 
-    - name: Pull the latest frontend image
-      community.docker.docker_image:
-        name: "deepanshu0903/calc-frontend:latest"
-        source: pull
+#     - name: Wait for Docker to be available
+#       command: docker info
+#       register: docker_status
+#       until: docker_status.rc == 0
+#       retries: 10
+#       delay: 5
 
-    - name: Remove existing frontend container (if running)
-      community.docker.docker_container:
-        name: calc-frontend
-        state: absent
+#     - name: Install required Ansible collections
+#       ansible.builtin.command: ansible-galaxy collection install community.docker
 
-    - name: Run the frontend container
-      community.docker.docker_container:
-        name: calc-frontend
-        image: "deepanshu0903/calc-frontend:latest"
-        state: started
-        restart_policy: always
-        ports:
-          - "3000:80"  # Host:Container port mapping for frontend
+#     ########################################################
+#     # Backend Container
+#     ########################################################
+
+#     - name: Pull the latest backend image
+#       community.docker.docker_image:
+#         name: "deepanshu0903/calc-backend:latest"
+#         source: pull
+
+#     - name: Remove existing backend container (if running)
+#       community.docker.docker_container:
+#         name: calc-backend
+#         state: absent
+
+#     - name: Run the backend container
+#       community.docker.docker_container:
+#         name: calc-backend
+#         image: "deepanshu0903/calc-backend:latest"
+#         state: started
+#         restart_policy: always
+#         ports:
+#           - "8000:8000"  # Host:Container port mapping for backend
+
+#     ########################################################
+#     # Frontend Container
+#     ########################################################
+
+#     - name: Pull the latest frontend image
+#       community.docker.docker_image:
+#         name: "deepanshu0903/calc-frontend:latest"
+#         source: pull
+
+#     - name: Remove existing frontend container (if running)
+#       community.docker.docker_container:
+#         name: calc-frontend
+#         state: absent
+
+#     - name: Run the frontend container
+#       community.docker.docker_container:
+#         name: calc-frontend
+#         image: "deepanshu0903/calc-frontend:latest"
+#         state: started
+#         restart_policy: always
+#         ports:
+#           - "3000:80"  # Host:Container port mapping for frontend
 
