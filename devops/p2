@@ -2,8 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_FE_IMAGE_NAME = 'calc-frontend'
-        DOCKER_BE_IMAGE_NAME = 'calc-backend'
+        DOCKER_IMAGE_NAME = 'my_calculator'
         DOCKER_TAG = 'deepanshu0903/scientific-calculator:latest'
         GITHUB_REPO_URL = 'https://github.com/Deepanshu09-max/SPE_MINI_PROJECT.git'
         DOCKER_CREDENTIALS_ID = 'DockerHubCred'  // Ensure correct Jenkins credential ID
@@ -89,4 +88,48 @@ pipeline {
                 }
         }
     }
+     post {
+        always {
+            script {
+                // Grab relevant environment variables
+                def jobName = env.JOB_NAME
+                def buildNumber = env.BUILD_NUMBER
+                def buildUrl = env.BUILD_URL
+
+                // Jenkins sets currentBuild.result, or 'UNKNOWN' if not set yet
+                def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
+
+                // Choose a color based on success/failure
+                def bannerColor = (pipelineStatus.toUpperCase() == 'SUCCESS') ? 'green' : 'red'
+
+                // Define an HTML body with inline CSS
+                def body = """
+                <html>
+                  <body>
+                    <div style="border: 4px solid ${bannerColor}; padding: 10px;">
+                      <h2>${jobName} Build #${buildNumber}</h2>
+                      <div style="background-color: ${bannerColor}; padding: 10px;">
+                        <h3 style="color: white;">Pipeline Status: ${pipelineStatus.toUpperCase()}</h3>
+                        <p>Check the <a href="${buildUrl}">console output</a> for more details.</p>
+                      </div>
+                    </div>
+                  </body>
+                </html>
+                """
+
+                // Send the email using the Email Extension plugin
+                emailext(
+                    subject: "${jobName} Build #${buildNumber} - ${pipelineStatus}",
+                    body: body,
+                    to: 'deepanshusaini7732@gmail.com',
+                    from: 'jenkins@example.com',
+                    replyTo: 'jenkins@example.com',
+                    mimeType: 'text/html',
+                    // Attach a file pattern if you have logs or artifacts named "a.txt" etc.
+                    attachmentsPattern: 'a.txt'
+                )
+            }
+        }
+    }
 }
+

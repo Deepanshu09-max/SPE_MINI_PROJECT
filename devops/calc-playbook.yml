@@ -1,27 +1,18 @@
-- name: Deploy Scientific Calculator Container
+- name: Deploy Scientific Calculator Containers
   hosts: all
-  become: yes # Required for managing Docker
+  become: yes  # Required for managing Docker
   vars:
     ansible_python_interpreter: /usr/bin/python3
-    # ansible_become_pass: "{{ lookup('env', 'ANSIBLE_BECOME_PASS') }}"
-
 
   tasks:
-    # - name: Allow Ansible to run sudo without a password
-    #   copy:
-    #     dest: /etc/sudoers.d/ansible
-    #     content: "ansible ALL=(ALL) NOPASSWD: ALL"
-    #   become: yes
-
     - name: Ensure Docker is installed
       command: docker --version
       register: docker_installed
       ignore_errors: yes
 
-
     - name: Start Docker (if not running)
       shell: sudo systemctl start docker
-      ignore_errors: yes # Ignore error if Docker is already running
+      ignore_errors: yes  # Ignore error if Docker is already running
 
     - name: Wait for Docker to be available
       command: docker info
@@ -33,21 +24,49 @@
     - name: Install required Ansible collections
       ansible.builtin.command: ansible-galaxy collection install community.docker
 
-    - name: Pull the latest Docker image
+    ########################################################
+    # Backend Container
+    ########################################################
+
+    - name: Pull the latest backend image
       community.docker.docker_image:
-        name: "deepanshu0903/scientific-calculator"
+        name: "deepanshu0903/calc-backend:latest"
         source: pull
 
-    - name: Remove existing container (if running)
+    - name: Remove existing backend container (if running)
       community.docker.docker_container:
-        name: calculator-container
+        name: calc-backend
         state: absent
 
-    - name: Run the container
+    - name: Run the backend container
       community.docker.docker_container:
-        name: calculator-container
-        image: "deepanshu0903/scientific-calculator:latest"
+        name: calc-backend
+        image: "deepanshu0903/calc-backend:latest"
         state: started
         restart_policy: always
         ports:
-          - "8000:8000" # Corrected port mapping for FastAPI
+          - "8000:8000"  # Host:Container port mapping for backend
+
+    ########################################################
+    # Frontend Container
+    ########################################################
+
+    - name: Pull the latest frontend image
+      community.docker.docker_image:
+        name: "deepanshu0903/calc-frontend:latest"
+        source: pull
+
+    - name: Remove existing frontend container (if running)
+      community.docker.docker_container:
+        name: calc-frontend
+        state: absent
+
+    - name: Run the frontend container
+      community.docker.docker_container:
+        name: calc-frontend
+        image: "deepanshu0903/calc-frontend:latest"
+        state: started
+        restart_policy: always
+        ports:
+          - "3000:80"  # Host:Container port mapping for frontend
+
