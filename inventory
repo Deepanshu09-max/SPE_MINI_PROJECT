@@ -1,2 +1,0 @@
-[containers]
-localhost ansible_connection=local ansible_python_interpreter=/Users/Deepanshu/.ansible-env/bin/python3
