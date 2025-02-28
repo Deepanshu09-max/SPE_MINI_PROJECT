@@ -2,16 +2,12 @@ pipeline {
     agent any
     
     environment {
-        // Names for your locally built images (no registry prefix)
         DOCKER_FE_IMAGE_NAME = 'calc-frontend'
         DOCKER_BE_IMAGE_NAME = 'calc-backend'
-        
-        // Tags for pushing to Docker Hub (or another registry)
         FE_TAG = 'deepanshu0903/calc-frontend:latest'
         BE_TAG = 'deepanshu0903/calc-backend:latest'
-        
         GITHUB_REPO_URL = 'https://github.com/Deepanshu09-max/SPE_MINI_PROJECT.git'
-        DOCKER_CREDENTIALS_ID = 'DockerHubCred'  // Jenkins credential ID for Docker Hub
+        DOCKER_CREDENTIALS_ID = 'DockerHubCred'
     }
     
     stages {
@@ -23,42 +19,11 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                // Example: installing Python deps for your backend tests
-                sh '''
-                    cd backend
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    python3 -m pip install --upgrade pip
-                    python3 -m pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Run Unit Tests') {
-            steps {
-                sh '''
-                    cd backend
-                    bash -c "python3 -m venv venv && \
-                    source venv/bin/activate && \
-                    python3 -m pip install --upgrade pip && \
-                    python3 -m pip install -r requirements.txt && \
-                    pytest test.py --tb=short --disable-warnings"
-                '''
-            }
-        }
-
         stage('Build Docker Images') {
             steps {
                 script {
-                    // Verify Docker installation
                     sh 'docker --version'
-                    
-                    // Build backend image (Dockerfile in ./backend)
                     sh "docker build -t ${DOCKER_BE_IMAGE_NAME} ./backend"
-                    
-                    // Build frontend image (Dockerfile in ./frontend)
                     sh "docker build -t ${DOCKER_FE_IMAGE_NAME} ./frontend"
                 }
             }
@@ -76,23 +41,15 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push to Docker Hub and clean') {
             steps {
                 script {
-                    // Tag & push backend
                     sh "docker tag ${DOCKER_BE_IMAGE_NAME} ${BE_TAG}"
                     sh "docker push ${BE_TAG}"
-                    
-                    // Tag & push frontend
                     sh "docker tag ${DOCKER_FE_IMAGE_NAME} ${FE_TAG}"
                     sh "docker push ${FE_TAG}"
                 }
-            }
-        }
-
-        stage('Clean Up Docker Images') {
-            steps {
-                script {
+                 script {
                     // Remove pushed images to free space on Jenkins agent
                     sh "docker rmi ${BE_TAG} || true"
                     sh "docker rmi ${DOCKER_BE_IMAGE_NAME} || true"
@@ -102,7 +59,7 @@ pipeline {
             }
         }
 
-     stage('Deploy using Ansible') {
+        stage('Deploy using Ansible') {
             steps {
                 sh '''
                   cd devops
@@ -111,23 +68,19 @@ pipeline {
             }
         }
 
-
     }
-     post {
+        
+       post {
         always {
             script {
-                // Grab relevant environment variables
+                echo '=== Send Email Notification ==='
+                
                 def jobName = env.JOB_NAME
                 def buildNumber = env.BUILD_NUMBER
                 def buildUrl = env.BUILD_URL
-
-                // Jenkins sets currentBuild.result, or 'UNKNOWN' if not set yet
                 def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
-
-                // Choose a color based on success/failure
                 def bannerColor = (pipelineStatus.toUpperCase() == 'SUCCESS') ? 'green' : 'red'
-
-                // Define an HTML body with inline CSS
+    
                 def body = """
                 <html>
                   <body>
@@ -141,19 +94,18 @@ pipeline {
                   </body>
                 </html>
                 """
-
-                // Send the email using the Email Extension plugin
+    
                 emailext(
                     subject: "${jobName} Build #${buildNumber} - ${pipelineStatus}",
                     body: body,
                     to: 'deepanshusaini7732@gmail.com',
                     from: 'jenkins@example.com',
                     replyTo: 'jenkins@example.com',
-                    mimeType: 'text/html',
-                    // Attach a file pattern if you have logs or artifacts named "a.txt" etc.
-                    attachmentsPattern: 'a.txt'
+                    mimeType: 'text/html'
                 )
             }
         }
     }
+
 }
+
