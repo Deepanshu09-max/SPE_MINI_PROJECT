@@ -141,7 +141,7 @@ docker run -d --name my-calc-back --network spe-mp -p 8000:8000 calc-backend
 ```
 
 ### Frontend Dockerfile
-![Dockerfile](./docker-front.png)
+![Dockerfile](./docs/docker-front.png)
 This Dockerfile creates an image for our HTML-based frontend application.
 
 - Uses an Nginx base image (`nginx:alpine`).
