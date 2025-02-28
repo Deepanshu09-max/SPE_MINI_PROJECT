@@ -79,7 +79,7 @@ Some key benefits of DevOps relevant to our project:
 
 ### Code Snippets
 
-![Python code](./calc.png)
+![Python code](./docs/calc.png)
 
 Key aspects of the Python backend code:
 - Edge-case handling (e.g., negative numbers for square roots).
