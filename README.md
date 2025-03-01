@@ -1,5 +1,5 @@
-## Title: "SPE Miniproject Report"
-### Author: "MT2024039 Deepanshu Saini"
+## Title: SPE Miniproject Report
+### Author: MT2024039 Deepanshu Saini
 ---
 
 
