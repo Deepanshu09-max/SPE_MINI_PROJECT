@@ -17,9 +17,15 @@
       args:
         chdir: /opt
 
+    - name: Stop and remove old containers
+        shell: docker compose down
+        args:
+          chdir: /opt
+      
     - name: Run Docker Compose
-      shell: docker compose up -d
-      args:
-        chdir: /opt
+        shell: docker compose up -d
+        args:
+          chdir: /opt
+
 
 
