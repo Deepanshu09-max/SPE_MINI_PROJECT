@@ -29,7 +29,7 @@ More details about the problem statement can be found in [this](./Mini%20Project
 - **Continuous Delivery/Deployment (CD)**: Automating the release process to deploy code changes quickly and safely to production or staging environments.  
 - **Version Control Systems**: Systems like Git are the backbone of modern DevOps, providing a way to track changes, collaborate on code, and manage releases.
 
-This approach bridges the gap between Development and Operations, leveraging each team’s strengths. The entire team works across the application lifecycle, illustrated by the loop diagram below:
+This approach bridges the gap between Development and Operations, leveraging each team’s strengths. The entire team works across the application lifecycle, illustrated by the loop diagram below
 
 ![DevOps loop](./docs/devops_loop.jpeg)
 
