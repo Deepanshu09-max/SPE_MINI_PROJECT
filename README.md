@@ -133,7 +133,7 @@ This Dockerfile creates an image for our Python-based backend application.
 
 - Uses a lightweight Python base image (e.g., `python:3.9-slim`).
 - Copies Python code and installs dependencies.
-- Exposes port `8000` and runs the FastAPI/Flask server.
+- Exposes port `8000` and runs the FastAPI server.
 
 **Running the Backend Container:**
 ```bash
